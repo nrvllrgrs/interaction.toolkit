@@ -1,0 +1,17 @@
+{
+    "name": "Unity.Interaction.Toolkit",
+    "references": [
+        "GUID:024a5fec8a15441459be4f8c47edeb01",
+        "GUID:6055be8ebefd69e48b49212b09b47b2f",
+        "GUID:88f844b56968a8e4aa1eb72dd513f985"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
