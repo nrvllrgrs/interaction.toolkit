@@ -29,7 +29,7 @@ namespace UnityEngine.Interaction.Toolkit
 
 		const float k_DefaultMaxRaycastDistance = 30f;
 		const float k_DefaultHoverTimeToSelect = 0.5f;
-		const int   kMaxRaycastHits = 10;
+		const int k_MaxRaycastHits = 10;
 
 		public enum HitDetectionType
 		{
@@ -41,32 +41,6 @@ namespace UnityEngine.Interaction.Toolkit
 		float m_MaxRaycastDistance = k_DefaultMaxRaycastDistance;
 		/// <summary>Gets or sets the max distance of ray cast. Increase this value will let you reach further.</summary>
 		public float maxRaycastDistance { get { return m_MaxRaycastDistance; } set { m_MaxRaycastDistance = value; } }
-
-		[SerializeField]
-		Transform m_ReferenceFrame;
-		/// <summary>Gets or sets the reference frame of the projectile.
-		/// If not set it will try to find the XRRig object, if the XRRig does not exist it will use self. /// </summary>
-		public Transform referenceFrame { get { return m_ReferenceFrame; } set { m_ReferenceFrame = value; } }
-				
-		[SerializeField]
-		float m_EndPointDistance = 30f;
-		/// <summary>Increase this value distance will make the end of curve further from the start point.</summary>
-		public float endPointDistance { get { return m_EndPointDistance; } set { m_EndPointDistance = value; } }
-		
-		[SerializeField]
-		float m_EndPointHeight = -10f;
-		/// <summary>Decrease this value will make the end of the curve drop lower relative to the start point.</summary>
-		public float endPointHeight { get { return m_EndPointHeight; } set { m_EndPointHeight = value; } }
-
-		[SerializeField]
-		float m_ControlPointDistance = 10f;
-		/// <summary>Increase this value will make the peak of the curve further from the start point.</summary>
-		public float controlPointDistance { get { return m_ControlPointDistance; } set { m_ControlPointDistance = value; } }
-
-		[SerializeField]
-		float m_ControlPointHeight = 5f;
-		/// <summary>Increase this value will make the peak of the curve higher relative to the start point.</summary>
-		public float controlPointHeight { get { return m_ControlPointHeight; } set { m_ControlPointHeight = value; } }
 
 		[SerializeField]
 		HitDetectionType m_HitDetectionType = HitDetectionType.Raycast;
@@ -85,70 +59,28 @@ namespace UnityEngine.Interaction.Toolkit
 
 		[SerializeField]
 		QueryTriggerInteraction m_RaycastTriggerInteraction = QueryTriggerInteraction.Ignore;
+
 		/// <summary>Gets or sets type of interaction with trigger volumes via raycast.</summary>
 		public QueryTriggerInteraction raycastTriggerInteraction { get { return m_RaycastTriggerInteraction; } set { m_RaycastTriggerInteraction = value; } }
-
-		[SerializeField]
-		bool m_HoverToSelect;
-		/// <summary>Gets or sets whether this uses hovering for a time period to select the interactable being hovered.</summary>
-		public bool hoverToSelect { get { return m_HoverToSelect; } set { m_HoverToSelect = value; } }
-
-		[SerializeField]
-		float m_HoverTimeToSelect = k_DefaultHoverTimeToSelect;
-		/// <summary>Gets or sets the number of seconds for which this interactor must hover over an object to select it if Hover To Select is enabled.</summary>
-		public float hoverTimeToSelect { get { return m_HoverTimeToSelect; } set { m_HoverTimeToSelect = value; } }
-
-		/// <summary>Gets the signed angle between the controller's forward direction and the tracking space.</summary>
-		public float Angle
-		{
-			get
-			{
-				Vector3 projectedForward = Vector3.ProjectOnPlane(m_StartTransform.forward, m_ReferenceFrame.up);
-				return Vector3.Angle(m_StartTransform.forward, projectedForward) != 0
-					? Vector3.SignedAngle(m_StartTransform.forward, projectedForward, Vector3.Cross(m_StartTransform.forward, projectedForward))
-					: 0f;
-			}
-		}
 
 		protected override List<BaseInteractable> ValidTargets { get { return m_ValidTargets; } }
 
 		// reusable array of raycast hits
-		RaycastHit[] m_RaycastHits = new RaycastHit[kMaxRaycastHits];
+		RaycastHit[] m_RaycastHits = new RaycastHit[k_MaxRaycastHits];
 		RaycastHitComparer m_RaycastHitComparer = new RaycastHitComparer();
 
 		// reusable list of valid targets
 		List<BaseInteractable> m_ValidTargets = new List<BaseInteractable>();
 
-		// reusable list of sample points
-		Vector3[] m_SamplePoints = null;
-		int m_NoSamplePoints = -1;
-
 		// state to manage hover selection
 		BaseInteractable m_CurrentNearestObject;
 		float m_LastTimeHoveredObjectChanged;
-		bool m_PassedHoverTimeToSelect = false;
 
 		int m_HitCount = 0;
 		int m_HitPositionInLine = -1;
 
 		// Control points to calculate the bezier curve
 		Vector3[] m_ControlPoints = new Vector3[3];
-
-		/// <summary>The starting transform of any Raycasts.  Default value is the controller transform, or the attachTransform if it is not null.</summary>
-		Transform m_StartTransform { get { return attachTransform ?? transform; } }
-
-		// Used by UpdateUIModel to retrieve the line points to pass along to Unity UI.
-		static Vector3[] s_CachedLinePoints;
-
-		void RebuildSamplePoints()
-		{
-			if (m_SamplePoints == null || m_SamplePoints.Length != 2)
-			{
-				m_SamplePoints = new Vector3[2];
-			}
-
-			m_NoSamplePoints = 0;
-		}
 
 		void FindOrCreateXRUIInputModule()
 		{
@@ -157,46 +89,7 @@ namespace UnityEngine.Interaction.Toolkit
 			{
 				eventSystem = new GameObject("Event System", typeof(EventSystem)).GetComponent<EventSystem>();
 			}
-		}
-
-		protected override void OnEnable()
-		{
-			base.OnEnable();
-			RebuildSamplePoints();
-			FindReferenceFrame();
-		}
-
-		protected override void OnDisable()
-		{
-			base.OnDisable();
-
-			// clear lines
-			m_NoSamplePoints = -1;
-		}
-
-		/// <summary> This function implements the ILineRenderable interface and returns the sample points of the line. </summary>
-		public bool GetLinePoints(ref Vector3[] linePoints, ref int noPoints)
-		{
-			if (m_SamplePoints == null || m_SamplePoints.Length < 2 || m_NoSamplePoints < 2)
-			{
-				return false;
-			}
-			else
-			{
-				if (linePoints == null)
-				{
-					linePoints = new Vector3[m_NoSamplePoints];
-				}
-
-				if (linePoints.Length < m_NoSamplePoints)
-				{
-					linePoints = new Vector3[m_NoSamplePoints];
-				}
-				Array.Copy(m_SamplePoints, linePoints, m_NoSamplePoints);
-				noPoints = m_NoSamplePoints;
-				return true;
-			}
-		}         
+		}       
 
 		/// <summary> This function implements the ILineRenderable interface, 
 		/// if there is a raycast hit, it will return the world position and the normal vector
@@ -254,21 +147,6 @@ namespace UnityEngine.Interaction.Toolkit
 			raycastHit = new RaycastHit();
 			return false;
 		}
-					   
-		void UpdateControlPoints()
-		{
-			m_ControlPoints[0] = m_StartTransform.position;
-			m_ControlPoints[1] = m_ControlPoints[0] + m_StartTransform.forward * m_ControlPointDistance + m_StartTransform.up * m_ControlPointHeight;
-			m_ControlPoints[2] = m_ControlPoints[0] + m_StartTransform.forward * m_EndPointDistance + m_StartTransform.up * m_EndPointHeight;
-		}
-
-		void FindReferenceFrame()
-		{
-			if (m_ReferenceFrame != null)
-				return;
-
-			m_ReferenceFrame = transform;
-		}
 
 		public override void ProcessInteractor(InteractionUpdateOrder.UpdatePhase updatePhase)
 		{
@@ -283,20 +161,19 @@ namespace UnityEngine.Interaction.Toolkit
 				{
 					m_CurrentNearestObject = nearestObject;
 					m_LastTimeHoveredObjectChanged = Time.time;
-					m_PassedHoverTimeToSelect = false;
 				}
-				else if (nearestObject && !m_PassedHoverTimeToSelect)
-				{
-					float progressToHoverSelect = Mathf.Clamp01((Time.time - m_LastTimeHoveredObjectChanged) / m_HoverTimeToSelect);
-					if (progressToHoverSelect >= 1.0f)
-						m_PassedHoverTimeToSelect = true;
-				}
+				//else if (nearestObject && !m_PassedHoverTimeToSelect)
+				//{
+				//	float progressToHoverSelect = Mathf.Clamp01((Time.time - m_LastTimeHoveredObjectChanged) / m_HoverTimeToSelect);
+				//	if (progressToHoverSelect >= 1.0f)
+				//		m_PassedHoverTimeToSelect = true;
+				//}
 			}
 		}
 
 		int CheckCollidersBetweenPoints(Vector3 from, Vector3 to)
 		{
-			Array.Clear(m_RaycastHits, 0, kMaxRaycastHits);
+			Array.Clear(m_RaycastHits, 0, k_MaxRaycastHits);
 
 			if (m_HitDetectionType == HitDetectionType.SphereCast && m_SphereCastRadius > 0.0f)
 			{
@@ -322,19 +199,12 @@ namespace UnityEngine.Interaction.Toolkit
 			Vector3 m_NextPoint;
 			
 			validTargets.Clear();
-
-			// we havent init'd cleanly. bail out.
-			if(m_SamplePoints == null || m_SamplePoints.Length < 2)
-				return;
-
-			m_NoSamplePoints = 1;
-			m_SamplePoints[0] = m_StartTransform.position;
 						
-			m_PreviousPoint = m_StartTransform.position;
+			m_PreviousPoint = attachTransform.position;
 			m_HitCount = 0;
 			m_HitPositionInLine = 0;
 
-			m_NextPoint = m_PreviousPoint + m_StartTransform.forward * maxRaycastDistance;
+			m_NextPoint = m_PreviousPoint + attachTransform.forward * maxRaycastDistance;
 			m_HitCount = CheckCollidersBetweenPoints(m_PreviousPoint, m_NextPoint);
 
 			if (m_HitCount != 0)
@@ -343,15 +213,11 @@ namespace UnityEngine.Interaction.Toolkit
 				m_HitPositionInLine = 1;
 			}
 
-			// save the "virtual" end point of the line
-			m_SamplePoints[m_NoSamplePoints] = m_NextPoint;
-			m_NoSamplePoints++;
-
 			// sort all the hits by distance to the controller
 			if (m_HitCount > 0)
 			{
 				SortingHelpers.Sort(m_RaycastHits, m_RaycastHitComparer);
-				for (var i = 0; i < Math.Min(m_HitCount, kMaxRaycastHits); ++i)  
+				for (var i = 0; i < Math.Min(m_HitCount, k_MaxRaycastHits); ++i)  
 				{
 					var interactable = interactionManager.TryGetInteractableForCollider(m_RaycastHits[i].collider);
 					if (interactable && !validTargets.Contains(interactable))
@@ -365,23 +231,6 @@ namespace UnityEngine.Interaction.Toolkit
 					}
 				}
 			}                        
-		}
-
-		/// <summary>Determines if the interactable is valid for hover this frame.</summary>
-		/// <param name="interactable">Interactable to check.</param>
-		/// <returns><c>true</c> if the interactable can be hovered over this frame.</returns>
-		public override bool CanHover(BaseInteractable interactable)
-		{
-			return base.CanHover(interactable) && (selectTarget == null || selectTarget == interactable);
-		}
-
-		/// <summary>Determines if the interactable is valid for selection this frame.</summary>
-		/// <param name="interactable">Interactable to check.</param>
-		/// <returns><c>true</c> if the interactable can be selected this frame.</returns>
-		public override bool CanSelect(BaseInteractable interactable)
-		{
-			bool selectActivated = (hoverToSelect && (m_CurrentNearestObject == interactable) && m_PassedHoverTimeToSelect) || base.CanSelect(interactable);
-			return selectActivated && (selectTarget == null || selectTarget == interactable);
 		}
 	}
 }

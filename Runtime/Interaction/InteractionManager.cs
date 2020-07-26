@@ -1,7 +1,4 @@
-using System;
-using System.Linq;
 using System.Collections.Generic;
-using UnityEngine;
 
 namespace UnityEngine.Interaction.Toolkit
 {
@@ -22,7 +19,7 @@ namespace UnityEngine.Interaction.Toolkit
 
 	public class InteractionManager : Singleton<InteractionManager>
 	{        
-		List<BaseInteractor> 	m_Interactors 	= new List<BaseInteractor>();
+		List<BaseInteractor> m_Interactors 	= new List<BaseInteractor>();
 		List<BaseInteractable> m_Interactables = new List<BaseInteractable>();
 
 		// internal properties for accessing Interactors and Interactables (used by XR Interaction Debugger)
@@ -91,9 +88,7 @@ namespace UnityEngine.Interaction.Toolkit
 			{
 				GetValidTargets(interactor, m_InteractorValidTargets);
 
-				ClearInteractorSelection(interactor); 
 				ClearInteractorHover(interactor, m_InteractorValidTargets);
-				InteractorSelectValidTargets(interactor, m_InteractorValidTargets);
 				InteractorHoverValidTargets(interactor, m_InteractorValidTargets);
 			}
 
@@ -112,9 +107,7 @@ namespace UnityEngine.Interaction.Toolkit
 		{
 			if (m_Interactors.Contains(interactor))
 			{                           
-				ClearInteractorHover(interactor, null);                
-				ClearInteractorSelection(interactor);                
-				
+				ClearInteractorHover(interactor, null);
 				m_Interactors.Remove(interactor);
 			}
 		}
@@ -169,19 +162,6 @@ namespace UnityEngine.Interaction.Toolkit
 			return validTargets;
 		}
 
-		internal void ForceSelect(BaseInteractor interactor, BaseInteractable interactable)
-		{
-			SelectEnter(interactor, interactable);
-		}
-
-		void ClearInteractorSelection(BaseInteractor interactor)
-		{
-			// TODO: Make sure SelectExit is called if the selectTarget of the interactor is destroyed (and write a test around this).
-			if (interactor.selectTarget &&
-				(!interactor.allowSelect || !interactor.CanSelect(interactor.selectTarget) || !interactor.selectTarget.IsSelectableBy(interactor)))
-				SelectExit(interactor, interactor.selectTarget);
-		}
-
 		void ClearInteractorHover(BaseInteractor interactor, List<BaseInteractable> validTargets)
 		{
 			interactor.GetHoverTargets(m_HoverTargetList);
@@ -191,38 +171,6 @@ namespace UnityEngine.Interaction.Toolkit
 				if (!interactor.allowHover || !interactor.CanHover(target) || !target.IsHoverableBy(interactor) || ((validTargets != null && !validTargets.Contains(target)) || validTargets == null))
 					HoverExit(interactor, target);
 			}
-		}
-
-		void SelectEnter(BaseInteractor interactor, BaseInteractable interactable)
-		{
-			// If Exclusive Selection, is this the only interactor trying to interact?
-			if (interactor.requireSelectExclusive)
-			{
-				for (int i = 0; i < m_Interactors.Count; i++)
-				{
-					if (m_Interactors[i] != interactor 
-						&& m_Interactors[i].selectTarget == interactable)
-					{
-						return;
-					}
-				}
-			}
-			else
-			{
-				for (int i = 0; i < m_Interactors.Count; i++)
-				{
-					if (m_Interactors[i].selectTarget == interactable)
-						SelectExit(m_Interactors[i], interactable);
-				}
-			}
-			interactor.OnSelectEnter(interactable);
-			interactable.OnSelectEnter(interactor);
-		}
-
-		void SelectExit(BaseInteractor interactor, BaseInteractable interactable)
-		{
-			interactor.OnSelectExit(interactable);
-			interactable.OnSelectExit(interactor);
 		}
 
 		void HoverEnter(BaseInteractor interactor, BaseInteractable interactable)
@@ -237,21 +185,6 @@ namespace UnityEngine.Interaction.Toolkit
 			interactable.OnHoverExit(interactor);
 		}
 
-		void InteractorSelectValidTargets(BaseInteractor interactor, List<BaseInteractable> validTargets)
-		{
-			if (interactor.allowSelect)
-			{
-				for (var i=0; i < validTargets.Count && interactor.allowSelect; ++i)
-				{
-					if (interactor.CanSelect(validTargets[i]) && validTargets[i].IsSelectableBy(interactor) &&
-						interactor.selectTarget != validTargets[i])
-					{
-						SelectEnter(interactor, validTargets[i]);
-					}
-				}
-			}
-		}
-
 		void InteractorHoverValidTargets(BaseInteractor interactor, List<BaseInteractable> validTargets)
 		{
 			if (interactor.allowHover)
@@ -259,8 +192,9 @@ namespace UnityEngine.Interaction.Toolkit
 				for (var i=0; i < validTargets.Count && interactor.allowHover; ++i)
 				{
 					interactor.GetHoverTargets(m_HoverTargetList);
-					if (interactor.CanHover(validTargets[i]) && validTargets[i].IsHoverableBy(interactor) &&
-						!m_HoverTargetList.Contains(validTargets[i]))
+					if (interactor.CanHover(validTargets[i])
+						&& validTargets[i].IsHoverableBy(interactor)
+						&& !m_HoverTargetList.Contains(validTargets[i]))
 					{
 						HoverEnter(interactor, validTargets[i]);
 					}

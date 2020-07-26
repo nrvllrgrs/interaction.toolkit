@@ -1,16 +1,15 @@
-using UnityEngine;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
 namespace UnityEngine.Interaction.Toolkit
 {
-    /// <summary>
-    /// Interactor used for directly interacting with interactables that are touching.  This is handled via trigger volumes
-    /// that update the current set of valid targets for this interactor.  This component must have a collision volume that is 
-    /// set to be a trigger to work.
-    /// </summary>
-    [DisallowMultipleComponent]
+	/// <summary>
+	/// Interactor used for directly interacting with interactables that are touching.  This is handled via trigger volumes
+	/// that update the current set of valid targets for this interactor.  This component must have a collision volume that is 
+	/// set to be a trigger to work.
+	/// </summary>
+	[DisallowMultipleComponent]
     [AddComponentMenu("Interaction/Interactors/Trigger Interactor")]
 	public class TriggerInteractor : BaseInteractor
 	{
@@ -77,22 +76,6 @@ namespace UnityEngine.Interaction.Toolkit
             }
 
             validTargets.Sort(m_InteractableSortComparison);
-        }
-
-        /// <summary>Determines if the interactable is valid for hover this frame.</summary>
-        /// <param name="interactable">Interactable to check.</param>
-        /// <returns><c>true</c> if the interactable can be hovered over this frame.</returns>
-        public override bool CanHover(BaseInteractable interactable)
-        {
-            return base.CanHover(interactable) && (selectTarget == null || selectTarget == interactable);
-        }
-
-        /// <summary>Determines if the interactable is valid for selection this frame.</summary>
-        /// <param name="interactable">Interactable to check.</param>
-        /// <returns><c>true</c> if the interactable can be selected this frame.</returns>
-		public override bool CanSelect(BaseInteractable interactable)
-        {
-            return base.CanSelect(interactable) && (selectTarget == null || selectTarget == interactable);
         }
 	}
 }
