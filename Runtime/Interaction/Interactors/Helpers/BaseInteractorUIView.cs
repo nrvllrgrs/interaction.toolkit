@@ -19,11 +19,15 @@
 		protected RectTransform m_RectTransform;
 		protected Canvas m_Canvas;
 		protected BaseInteractable m_HoverInteractable;
+		protected T m_HoverModel;
 
 		#endregion
 
 		#region Properties
 
+		public BaseInteractable hoverInteractable => m_HoverInteractable;
+		public BaseInteractableUIModel hoverModel => m_HoverModel;
+		
 		protected RectTransform rectTransform => this.GetComponent(ref m_RectTransform);
 		protected Canvas canvas => this.GetComponentInParent(ref m_Canvas);
 
@@ -58,6 +62,7 @@
 				return;
 
 			m_HoverInteractable = interactable;
+			m_HoverModel = model;
 			SetModel(model);
 		}
 
@@ -67,11 +72,13 @@
 			if (m_HoverInteractable == interactable)
 			{
 				m_HoverInteractable = null;
+				m_HoverModel = null;
 				SetModel(null);
 			}
 		}
 
 		protected abstract void SetModel(T model);
+		protected abstract void RefreshView();
 
 		protected virtual void Update()
 		{

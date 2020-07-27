@@ -35,6 +35,9 @@ namespace UnityEngine.Interaction.Toolkit.UI
 				items[i].textMesh.text = string.Empty;
 			}
 		}
+		
+		protected override void RefreshView()
+		{ }
 
 		#endregion
 
