@@ -62,7 +62,9 @@
 				return;
 
 			m_HoverInteractable = interactable;
+			
 			m_HoverModel = model;
+			m_HoverModel.onModelChanged += ModelChanged();
 			SetModel(model);
 		}
 
@@ -72,9 +74,16 @@
 			if (m_HoverInteractable == interactable)
 			{
 				m_HoverInteractable = null;
+				
+				m_HoverModel.onModelChanged -= ModelChanged();
 				m_HoverModel = null;
 				SetModel(null);
 			}
+		}
+		
+		private void ModelChanged(object sender, System.EventArgs e)
+		{
+			RefreshView();
 		}
 
 		protected abstract void SetModel(T model);
