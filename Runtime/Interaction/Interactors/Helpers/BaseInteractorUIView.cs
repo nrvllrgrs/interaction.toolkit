@@ -64,7 +64,7 @@
 			m_HoverInteractable = interactable;
 			
 			m_HoverModel = model;
-			m_HoverModel.onModelChanged += ModelChanged();
+			m_HoverModel.onChanged += ModelChanged();
 			SetModel(model);
 		}
 
@@ -75,7 +75,7 @@
 			{
 				m_HoverInteractable = null;
 				
-				m_HoverModel.onModelChanged -= ModelChanged();
+				m_HoverModel.onChanged -= ModelChanged();
 				m_HoverModel = null;
 				SetModel(null);
 			}
@@ -86,8 +86,12 @@
 			RefreshView();
 		}
 
+		protected virtual void RefreshView()
+		{
+			SetModel(m_HoverModel);
+		}
+
 		protected abstract void SetModel(T model);
-		protected abstract void RefreshView();
 
 		protected virtual void Update()
 		{
