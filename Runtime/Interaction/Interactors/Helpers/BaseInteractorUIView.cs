@@ -64,7 +64,7 @@
 			m_HoverInteractable = interactable;
 			
 			m_HoverModel = model;
-			m_HoverModel.onChanged += ModelChanged();
+			m_HoverModel.onChanged += ModelChanged;
 			SetModel(model);
 		}
 
@@ -75,7 +75,7 @@
 			{
 				m_HoverInteractable = null;
 				
-				m_HoverModel.onChanged -= ModelChanged();
+				m_HoverModel.onChanged -= ModelChanged;
 				m_HoverModel = null;
 				SetModel(null);
 			}
