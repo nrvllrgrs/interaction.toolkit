@@ -47,7 +47,7 @@
 			if (m_Interactor != null)
 			{
 				m_Interactor.onHoverEnter.RemoveListener(HoverEnter);
-				m_Interactor.onHoverExit.AddListener(HoverExit);
+				m_Interactor.onHoverExit.RemoveListener(HoverExit);
 			}
 		}
 
