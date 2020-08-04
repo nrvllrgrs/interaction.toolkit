@@ -99,7 +99,7 @@
 				return;
 
 			// Move pivot of UI transform to the interactable pivot in canvas space
-			rectTransform.anchoredPosition3D = canvas.WorldToCanvasPoint(m_HoverInteractable.transform.position);
+			rectTransform.anchoredPosition3D = canvas.WorldToCanvasPoint(m_HoverInteractable.target.position);
 		}
 
 		#endregion

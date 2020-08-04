@@ -19,7 +19,6 @@ namespace UnityEngine.Interaction.Toolkit
 	[DefaultExecutionOrder(InteractionUpdateOrder.k_Interactables)]
 	public abstract class BaseInteractable : MonoBehaviour
 	{
-
 		/// <summary>Type of movement for an interactable</summary>
 		public enum MovementType
 		{
@@ -57,6 +56,10 @@ namespace UnityEngine.Interaction.Toolkit
 		LayerMask m_InteractionLayerMask = -1;
 		/// <summary>Gets or sets the layer mask to use to filter interactors that can interact with this interactable.</summary>
 		public LayerMask interactionLayerMask { get { return m_InteractionLayerMask; } set { m_InteractionLayerMask = value; } }
+
+		[SerializeField]
+		private Transform m_Target;
+		public Transform target => m_Target;
 
 		List<BaseInteractor> m_HoveringInteractors = new List<BaseInteractor>();
 		/// <summary>Gets the list of interactors that are hovering on this interactable; </summary>
@@ -98,17 +101,30 @@ namespace UnityEngine.Interaction.Toolkit
 		{
 			// if we have no colliders, add children colliders
 			if (m_Colliders.Count <= 0)
+			{
 				m_Colliders = new List<Collider>(GetComponentsInChildren<Collider>());
+			}
 
 			// setup interaction manager
 			if (!m_InteractionManager)
+			{
 				m_InteractionManager = FindObjectOfType<InteractionManager>();
-			if (m_InteractionManager)
-				RegisterWithInteractionMananger();
-			else
-				Debug.LogWarning("Could not find InteractionManager.", this);
-		}
+			}
 
+			if (m_InteractionManager)
+			{
+				RegisterWithInteractionMananger();
+			}
+			else
+			{
+				Debug.LogWarning("Could not find InteractionManager.", this);
+			}
+
+			if (m_Target == null)
+			{
+				m_Target = transform;
+			}
+		}
 
 		void FindCreateInteractionManager()
 		{
