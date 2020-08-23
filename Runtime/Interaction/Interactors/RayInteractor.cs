@@ -219,10 +219,13 @@ namespace UnityEngine.Interaction.Toolkit
 				SortingHelpers.Sort(m_RaycastHits, m_RaycastHitComparer);
 				for (var i = 0; i < Math.Min(m_HitCount, k_MaxRaycastHits); ++i)  
 				{
-					var interactable = interactionManager.TryGetInteractableForCollider(m_RaycastHits[i].collider);
-					if (interactable && !validTargets.Contains(interactable))
+					var interactable = interactionManager.TryGetInteractableForCollider(m_RaycastHits[i].collider);				
+					if (interactable != null)
 					{
-						validTargets.Add(interactable);
+						if (!validTargets.Contains(interactable))
+						{
+							validTargets.Add(interactable);
+						}
 					}
 					else
 					{

@@ -121,7 +121,9 @@ namespace UnityEngine.Interaction.Toolkit
 				foreach (var collider in interactable.colliders)
 				{
 					if (collider != null && !m_ColliderToInteractableMap.ContainsKey(collider))
+					{
 						m_ColliderToInteractableMap.Add(collider, interactable);
+					}
 				}
 			}
 		}
@@ -135,18 +137,18 @@ namespace UnityEngine.Interaction.Toolkit
 				foreach (var collider in interactable.colliders)
 				{
 					if (collider != null && m_ColliderToInteractableMap.ContainsKey(collider))
+					{
 						m_ColliderToInteractableMap.Remove(collider);
+					}
 				}
 			}
 		}
 
 		internal BaseInteractable TryGetInteractableForCollider(Collider collider)
 		{
-			BaseInteractable interactable;
-			if (collider != null && m_ColliderToInteractableMap.TryGetValue(collider, out interactable))
-				return interactable;
-			
-			return null;
+			return collider != null && m_ColliderToInteractableMap.TryGetValue(collider, out BaseInteractable interactable)
+				? interactable
+				: null;
 		}
 
 		internal List<BaseInteractable> GetValidTargets(BaseInteractor interactor, List<BaseInteractable> validTargets)
@@ -157,7 +159,9 @@ namespace UnityEngine.Interaction.Toolkit
 			for (int i = validTargets.Count - 1; i >= 0; --i)
 			{
 				if (!m_Interactables.Contains(validTargets[i]))
+				{
 					validTargets.RemoveAt(i);
+				}
 			}
 			return validTargets;
 		}
@@ -168,8 +172,14 @@ namespace UnityEngine.Interaction.Toolkit
 			for (int i = 0; i < m_HoverTargetList.Count; i++)
 			{
 				var target = m_HoverTargetList[i];
-				if (!interactor.allowHover || !interactor.CanHover(target) || !target.IsHoverableBy(interactor) || ((validTargets != null && !validTargets.Contains(target)) || validTargets == null))
+				if (!interactor.allowHover
+					|| !interactor.CanHover(target)
+					|| !target.IsHoverableBy(interactor)
+					|| validTargets == null
+					|| !validTargets.Contains(target))
+				{
 					HoverExit(interactor, target);
+				}
 			}
 		}
 
@@ -189,7 +199,7 @@ namespace UnityEngine.Interaction.Toolkit
 		{
 			if (interactor.allowHover)
 			{
-				for (var i=0; i < validTargets.Count && interactor.allowHover; ++i)
+				for (int i = 0; i < validTargets.Count && interactor.allowHover; ++i)
 				{
 					interactor.GetHoverTargets(m_HoverTargetList);
 					if (interactor.CanHover(validTargets[i])
