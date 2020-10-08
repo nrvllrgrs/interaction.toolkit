@@ -182,7 +182,6 @@ namespace UnityEngine.Interaction.Toolkit
 			}
 			else
 			{
-				// raycast from last point to next point to check if there are hits in between                                       
 			   return Physics.RaycastNonAlloc(from, to - from, m_RaycastHits, Vector3.Distance(to, from), raycastMask, raycastTriggerInteraction);
 			}
 		}
@@ -215,17 +214,14 @@ namespace UnityEngine.Interaction.Toolkit
 
 			// sort all the hits by distance to the controller
 			if (m_HitCount > 0)
-			{
+			{			
 				SortingHelpers.Sort(m_RaycastHits, m_RaycastHitComparer);
 				for (var i = 0; i < Math.Min(m_HitCount, k_MaxRaycastHits); ++i)  
 				{
-					var interactable = interactionManager.TryGetInteractableForCollider(m_RaycastHits[i].collider);				
-					if (interactable != null)
+					var interactable = interactionManager.TryGetInteractableForCollider(m_RaycastHits[i].collider);
+					if (interactable && !validTargets.Contains(interactable))
 					{
-						if (!validTargets.Contains(interactable))
-						{
-							validTargets.Add(interactable);
-						}
+						validTargets.Add(interactable);
 					}
 					else
 					{
@@ -233,6 +229,15 @@ namespace UnityEngine.Interaction.Toolkit
 						break;
 					}
 				}
+
+				// Store first hit interactable
+				var first = validTargets.OrderByDescending(x => x.priority)
+					.FirstOrDefault();
+
+				// Clear and add stored interactable
+				// Can only have 1 target at a time
+				validTargets.Clear();
+				validTargets.Add(first);
 			}                        
 		}
 	}

@@ -60,6 +60,8 @@ namespace UnityEngine.Interaction.Toolkit
 		[SerializeField]
 		private Transform m_Target;
 		public Transform target => m_Target;
+		
+		public int priority;
 
 		List<BaseInteractor> m_HoveringInteractors = new List<BaseInteractor>();
 		/// <summary>Gets the list of interactors that are hovering on this interactable; </summary>

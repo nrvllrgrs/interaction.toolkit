@@ -1,4 +1,6 @@
-﻿namespace UnityEngine.Interaction.Toolkit.UI
+﻿using System.Collections.Generic;
+
+namespace UnityEngine.Interaction.Toolkit.UI
 {
 	public abstract class BaseInteractorUIView<T> : MonoBehaviour
 		where T : BaseInteractableUIModel
@@ -70,11 +72,11 @@
 
 		protected virtual void HoverExit(BaseInteractable interactable)
 		{
-			// Cleared interactable
 			if (m_HoverInteractable == interactable)
 			{
+				// Cleared interactable
 				m_HoverInteractable = null;
-				
+			
 				m_HoverModel.onChanged -= ModelChanged;
 				m_HoverModel = null;
 				SetModel(null);

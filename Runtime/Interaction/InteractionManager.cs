@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 
 namespace UnityEngine.Interaction.Toolkit
 {
@@ -19,12 +20,12 @@ namespace UnityEngine.Interaction.Toolkit
 
 	public class InteractionManager : Singleton<InteractionManager>
 	{        
-		List<BaseInteractor> m_Interactors 	= new List<BaseInteractor>();
-		List<BaseInteractable> m_Interactables = new List<BaseInteractable>();
+		HashSet<BaseInteractor> m_Interactors = new HashSet<BaseInteractor>();
+		HashSet<BaseInteractable> m_Interactables = new HashSet<BaseInteractable>();
 
 		// internal properties for accessing Interactors and Interactables (used by XR Interaction Debugger)
-		internal List<BaseInteractor> interactors { get { return m_Interactors; } }
-		internal List<BaseInteractable> interactables { get { return m_Interactables; } }
+		internal IEnumerable<BaseInteractor> interactors { get { return m_Interactors; } }
+		internal IEnumerable<BaseInteractable> interactables { get { return m_Interactables; } }
 
 		// map of all registered objects to test for colliding
 		Dictionary<Collider, BaseInteractable> m_ColliderToInteractableMap = new Dictionary<Collider, BaseInteractable>();
@@ -121,9 +122,7 @@ namespace UnityEngine.Interaction.Toolkit
 				foreach (var collider in interactable.colliders)
 				{
 					if (collider != null && !m_ColliderToInteractableMap.ContainsKey(collider))
-					{
 						m_ColliderToInteractableMap.Add(collider, interactable);
-					}
 				}
 			}
 		}
@@ -146,9 +145,11 @@ namespace UnityEngine.Interaction.Toolkit
 
 		internal BaseInteractable TryGetInteractableForCollider(Collider collider)
 		{
-			return collider != null && m_ColliderToInteractableMap.TryGetValue(collider, out BaseInteractable interactable)
-				? interactable
-				: null;
+			if (collider != null && m_ColliderToInteractableMap.TryGetValue(collider, out BaseInteractable interactable))
+			{
+				return interactable;
+			}
+			return null;
 		}
 
 		internal List<BaseInteractable> GetValidTargets(BaseInteractor interactor, List<BaseInteractable> validTargets)
@@ -172,25 +173,21 @@ namespace UnityEngine.Interaction.Toolkit
 			for (int i = 0; i < m_HoverTargetList.Count; i++)
 			{
 				var target = m_HoverTargetList[i];
-				if (!interactor.allowHover
-					|| !interactor.CanHover(target)
-					|| !target.IsHoverableBy(interactor)
-					|| validTargets == null
-					|| !validTargets.Contains(target))
-				{
+				if (!interactor.allowHover || !interactor.CanHover(target) || !target.IsHoverableBy(interactor) || (validTargets == null || !validTargets.Contains(target)))
 					HoverExit(interactor, target);
-				}
 			}
 		}
 
 		void HoverEnter(BaseInteractor interactor, BaseInteractable interactable)
 		{
+			//Debug.LogFormat("Hover Enter: Interactor = {0}; Interactable = {1}", interactor.name, interactable.name);
 			interactor.OnHoverEnter(interactable);
 			interactable.OnHoverEnter(interactor);
 		}
 
 		void HoverExit(BaseInteractor interactor, BaseInteractable interactable)
 		{
+			//Debug.LogFormat("Hover Exit: Interactor = {0}; Interactable = {1}", interactor.name, interactable.name);
 			interactor.OnHoverExit(interactable);
 			interactable.OnHoverExit(interactor);
 		}
@@ -199,14 +196,16 @@ namespace UnityEngine.Interaction.Toolkit
 		{
 			if (interactor.allowHover)
 			{
-				for (int i = 0; i < validTargets.Count && interactor.allowHover; ++i)
+				var orderedTargets = validTargets.OrderBy(x => x.priority).ToList();
+				for (var i=0; i < orderedTargets.Count; ++i)
 				{
 					interactor.GetHoverTargets(m_HoverTargetList);
-					if (interactor.CanHover(validTargets[i])
-						&& validTargets[i].IsHoverableBy(interactor)
-						&& !m_HoverTargetList.Contains(validTargets[i]))
+					if (interactor.CanHover(orderedTargets[i])
+						&& orderedTargets[i].IsHoverableBy(interactor)
+						&& !m_HoverTargetList.Contains(orderedTargets[i]))
 					{
-						HoverEnter(interactor, validTargets[i]);
+						HoverEnter(interactor, orderedTargets[i]);
+						return;
 					}
 				}
 			}

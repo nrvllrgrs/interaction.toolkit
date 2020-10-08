@@ -77,6 +77,8 @@ namespace UnityEngine.Interaction.Toolkit
 		/// </summary>
 		protected abstract List<BaseInteractable> ValidTargets { get; }
 
+		public BaseInteractable Target => m_HoverTargets.FirstOrDefault();
+
 		#endregion
 
 		#region Methods
@@ -86,7 +88,7 @@ namespace UnityEngine.Interaction.Toolkit
 			// setup interaction manager
 			if (!m_InteractionManager)
 			{
-				m_InteractionManager = FindObjectOfType<InteractionManager>();
+				m_InteractionManager = InteractionManager.Instance;
 			}
 
 			if (m_InteractionManager)
@@ -175,13 +177,7 @@ namespace UnityEngine.Interaction.Toolkit
 		{
 			if (m_InteractionManager == null)
 			{
-				m_InteractionManager = Object.FindObjectOfType<InteractionManager>();
-				if (m_InteractionManager == null)
-				{
-					var interactionManagerGO = new GameObject("Interaction Manager", typeof(InteractionManager));
-					if (interactionManagerGO)
-						m_InteractionManager = interactionManagerGO.GetComponent<InteractionManager>();
-				}
+				m_InteractionManager = InteractionManager.Instance;
 			}
 		}
 

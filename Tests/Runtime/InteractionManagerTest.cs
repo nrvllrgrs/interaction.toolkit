@@ -24,7 +24,7 @@ namespace UnityEngine.Interaction.Toolkit.Tests
 			var interactor = TestUtilities.CreateDirectInteractor();
 
 			Assert.That(manager.interactors, Has.Count.EqualTo(1));
-			Assert.That(manager.interactors[0], Is.EqualTo(interactor));
+			Assert.That(manager.interactors.ElementAt(0), Is.EqualTo(interactor));
 		}
 
 		[Test]
@@ -34,7 +34,7 @@ namespace UnityEngine.Interaction.Toolkit.Tests
 			var interactable = TestUtilities.CreateGrabInteractable();
 
 			Assert.That(manager.interactables, Has.Count.EqualTo(1));
-			Assert.That(manager.interactables[0], Is.EqualTo(interactable));
+			Assert.That(manager.interactables.ElementAt(0), Is.EqualTo(interactable));
 			Assert.That(interactable.colliders, Has.Count.EqualTo(1));
 			//Assert.That(manager.TryGetInteractableForCollider(interactable.colliders.First()), Is.EqualTo(interactable));
 		}
