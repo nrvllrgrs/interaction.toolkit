@@ -239,6 +239,16 @@ namespace UnityEngine.Interaction.Toolkit
 		public virtual void ProcessInteractable(InteractionUpdateOrder.UpdatePhase updatePhase)
 		{
 			return;
-		}        
+		}
+		
+		public virtual void CreateTarget()
+		{
+			if (m_Target == null)
+			{
+				var obj = new GameObject("Target");
+				obj.transform.SetParent(transform, false);
+				m_Target = obj.transform;
+			}
+		}
 	}
 }
