@@ -1,7 +1,7 @@
 {
   "name": "com.groundling.interaction.toolkit",
   "displayName": "Interaction Toolkit",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "The Interaction Toolkit package is a high-level, component-based, interaction system. It provides a framework that makes 3D and UI interactions available from Unity input events. The core of this system is a set of base Interactor and Interactable components, and an Interaction Manager that ties these two types of components together.",
   "author": "Groundling Games",
   "unity": "2019.3",
