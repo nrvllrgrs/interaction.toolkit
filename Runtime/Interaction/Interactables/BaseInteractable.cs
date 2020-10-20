@@ -243,7 +243,7 @@ namespace UnityEngine.Interaction.Toolkit
 		
 		public virtual void CreateTarget()
 		{
-			if (m_Target == null)
+			if (m_Target == transform)
 			{
 				var obj = new GameObject("Target");
 				obj.transform.SetParent(transform, false);
