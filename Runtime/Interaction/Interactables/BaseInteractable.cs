@@ -126,6 +126,9 @@ namespace UnityEngine.Interaction.Toolkit
 			{
 				m_Target = transform;
 			}
+
+			InteractionManager.Initialized += InteractionManager_Initialized;
+			InteractionManager.Terminated += InteractionManager_Terminated;
 		}
 
 		void FindCreateInteractionManager()
@@ -151,6 +154,7 @@ namespace UnityEngine.Interaction.Toolkit
 					m_RegisteredInteractionManager.UnregisterInteractable(this);
 					m_RegisteredInteractionManager = null;
 				}
+
 				if (m_InteractionManager)
 				{
 					m_InteractionManager.RegisterInteractable(this);
@@ -159,10 +163,32 @@ namespace UnityEngine.Interaction.Toolkit
 			}
 		}
 
+		private void InteractionManager_Initialized(InteractionManager manager)
+		{
+			if (m_RegisteredInteractionManager == null)
+			{
+				m_InteractionManager = manager;
+				RegisterWithInteractionMananger();
+			}
+		}
+
+		private void InteractionManager_Terminated(InteractionManager manager)
+		{
+			if (m_RegisteredInteractionManager == manager)
+			{
+				m_RegisteredInteractionManager = null;
+			}
+		}
+
 		void OnDestroy()
 		{
 			if (m_RegisteredInteractionManager)
+			{
 				m_InteractionManager.UnregisterInteractable(this);
+			}
+
+			InteractionManager.Initialized -= InteractionManager_Initialized;
+			InteractionManager.Terminated -= InteractionManager_Terminated;
 		}
 
 		/// <summary>
